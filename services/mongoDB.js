@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 
-const connectDB = () => {
-    mongoose.connect(process.env.DB);
+const connectDB = async () => {
+   await mongoose.connect(process.env.DB);
     const db = mongoose.connection;
 
     db.on('error', (err) => {
@@ -9,7 +9,7 @@ const connectDB = () => {
     });
 
     db.once('connected' , () => {
-        console.log('MongoDB Connected and listening on port ' + process.env.PORT);
+        console.log(`MongoDB Connected and listening on port ${process.env.PORT}  ✅ ✅`);
     });
 }
 
