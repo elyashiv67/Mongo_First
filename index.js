@@ -2,7 +2,7 @@ import express from 'express';
 import dotenv from 'dotenv';
 import morgan from 'morgan';
 import db_connect from './services/mongoDB.js';
-import Main_R from "./routers/Main_R.js";
+import Main_R from "./routes/Main_R.js";
 
 dotenv.config();
 

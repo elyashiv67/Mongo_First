@@ -7,15 +7,15 @@ async function getAllCategories(req, res){
         if(categories.length === 0){
             return res.status(404).json({message: 'No category found'});
         }
-        res.status(200).json({categories: categories});
+        return res.status(200).json({categories: categories});
     }catch(err){
-        res.status(500).json({message: "err in get all categories" , error:err});
+       return res.status(500).json({message: "err in get all categories" , error:err});
     }
 }
 
 async function createCategory(req, res){
     try {
-        const {name , numOfBooks} = req.body;
+        const {name , numOfBooks} = req.good_val;
 
         const newCategory = await Category.create({
             name,
@@ -26,13 +26,13 @@ async function createCategory(req, res){
             return res.status(400).json({message: 'Category not added'});
         }
 
-        res.status(201).json({
+       return res.status(201).json({
             message: 'Category added successfully',
             category: newCategory
         });
 
     }catch(e){
-        res.status(500).json({error: e.message});
+       return  res.status(500).json({error: e.message});
     }
 }
 
@@ -45,9 +45,9 @@ async function getCategoryById(req, res){
         if (!category) {
             return res.status(404).json({message: 'Category not found'});
         }
-        res.status(200).json({category});
+        return res.status(200).json({category});
     }catch(e){
-        res.status(500).json({message: `server error in getting category ${e}`});
+        return res.status(500).json({message: `server error in getting category ${e}`});
     }
 }
 
@@ -69,12 +69,12 @@ async function updateCategory(req, res){
         if (!updatedCategory) {
             return res.status(404).json({message: 'Category not found'});
         }
-        res.status(200).json({
+        return res.status(200).json({
             message: 'Category updated successfully',
             category: updatedCategory
         });
     }catch(e){
-        res.status(500).json({message: `Category not updated ${e}`});
+        return res.status(500).json({message: `Category not updated ${e}`});
     }
 }
 
@@ -85,12 +85,12 @@ async function deleteCategory(req, res){
         if (!deletedCategory) {
             return res.status(404).json({message: 'Category not found'});
         }
-        res.status(200).json({
+        return res.status(200).json({
             message: 'Category deleted successfully',
             category: deletedCategory
         });
     }catch(e){
-        res.status(500).json({message: `server error in deleteing category  err:${e}`});
+        return res.status(500).json({message: `server error in deleteing category  err:${e}`});
     }
 }
 
