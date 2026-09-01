@@ -1,5 +1,7 @@
 import Book from '../module/Books.js';
 import Category from '../module/Categories.js';
+import User from '../module/Users.js';
+import mongoose from "mongoose";
 
 async function getAllBooks(req, res) {
     try {
@@ -31,7 +33,6 @@ async function getBookById(req, res) {
     }
 }
 
-
 async function getBooksByCategory(req, res) {
     try {
         const categoryId = req.id;
@@ -51,6 +52,10 @@ async function createBook(req, res) {
     let category_updated = false;
     try {
         const {title, category, author, date_taken} = req.valid_val;
+
+        const authorUser = await User.findOne({ _id: author, role: 'author' });
+        if (!authorUser)
+            return res.status(400).json({ message: 'must be an author to add a book' });
 
         const catInc = await Category.findByIdAndUpdate(category, {$inc: {numOfBooks: 1}});
 
@@ -135,4 +140,102 @@ async function deleteBook(req, res) {
     }
 }
 
-export {getAllBooks, getBookById, getBooksByCategory, createBook, updateBook , deleteBook};
+async function borrowBook(req, res) {
+    try {
+        const { user_id, book_id } = req.body;
+        if (!mongoose.Types.ObjectId.isValid(user_id) || !mongoose.Types.ObjectId.isValid(book_id))
+            return res.status(400).json({ message: 'ids not valid' });
+
+        const book = await Book.findById(book_id);
+        if (!book){
+            return res.status(404).json({message: 'Book not found'});
+        }
+        if(book.isTaken){
+            return res.status(400).json({message: 'Book already taken'});
+        }
+        const user = await User.findById(user_id);
+        if (!user)
+            return res.status(404).json({message: 'User not found'});
+
+        const books = user.books;
+        if(books.length >= 3){
+            return res.status(400).json({message: 'user cant take more books'});
+        }
+        books.push(book._id);
+        book.isTaken = true;
+        book.date_taken = new Date();
+        book.date_back = null;
+        await book.save();
+        await user.save();
+
+        return res.status(200).json({message: 'Book borrowed successfully'});
+
+    } catch (e) {
+        return res.status(500).json({ message: `Server error: ${e.message}` });
+    }
+}
+
+async function returnBook(req, res) {
+    try {
+        const { user_id, book_id } = req.body;
+        if (!mongoose.Types.ObjectId.isValid(user_id) || !mongoose.Types.ObjectId.isValid(book_id))
+            return res.status(400).json({ message: 'ids not valid' });
+
+        const user = await User.findById(user_id);
+        if (!user)
+            return res.status(404).json({message: 'User not found'});
+
+        const hasBook = user.books.some(id => id.equals(book_id));
+        if (!hasBook)
+            return res.status(400).json({message: 'Book is not borrowed by this user'});
+
+        const book = await Book.findOne({_id: book_id , isTaken: true});
+        if (!book)
+            return res.status(404).json({ message: 'Book not found or not currently borrowed' });
+
+        user.books.pull(book_id);
+        book.isTaken = false;
+        book.date_back = new Date();
+        await book.save();
+        await user.save();
+
+        return res.status(200).json({message: 'Book returned successfully'});
+
+    } catch (e) {
+        return res.status(500).json({ message: `Server error: ${e.message}` });
+    }
+}
+
+async function getUserOfBook(req, res) {
+    try {
+        const book_id = req.id;
+
+        const user = await User.findOne({books:book_id}).select('name');
+        if (!user)
+            return res.status(404).json({message: 'No user is holding this book'});
+
+        return res.status(200).json(user);
+    } catch (e) {
+        return res.status(500).json({ message: `Server error: ${e.message}` });
+    }
+}
+
+async function getAllBooksByCategory(req, res) {
+    try {
+        const books = await Book.find().populate('category');
+        let booksByCategory = new Map();
+        books.forEach((book) => {
+            let category = book.category.name;
+            let value = booksByCategory.get(category) || [];
+            value.push(book);
+            booksByCategory.set(category,value);
+        });
+
+        return res.status(200).json(Object.fromEntries(booksByCategory));
+
+    } catch (e) {
+        return res.status(500).json({ message: `Server error: ${e.message}` });
+    }
+}
+
+export {getAllBooks, getBookById, getBooksByCategory, createBook, updateBook , deleteBook, borrowBook, returnBook, getUserOfBook, getAllBooksByCategory};

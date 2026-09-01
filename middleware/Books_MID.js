@@ -14,6 +14,7 @@ function validAddBook(req, res, next) {
             return res.status(400).json({ error: 'Category or author must be valid ObjectIds' });
         }
 
+
         if (!date_taken || isNaN(Date.parse(date_taken))) {
             return res.status(400).json({ error: 'Date taken must be a valid date' });
         }

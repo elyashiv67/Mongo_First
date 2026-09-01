@@ -1,8 +1,13 @@
 import express from "express";
-import Caterories_R from "./Caterories_R.js";
+import CategoriesRoute from "./Caterories_R.js";
+import BooksRoute from '../routes/Books_R.js';
+import UserRoute from '../routes/Users_R.js';
 
 const router = express.Router();
 
-router.use('/cat' , Caterories_R);
+router.use('/cat' , CategoriesRoute);
+router.use('/books' , BooksRoute);
+router.use('/users', UserRoute);
+
 
 export default router;

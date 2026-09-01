@@ -36,6 +36,7 @@ const UserSchema = new mongoose.Schema({
         required: true,
         default: 'user',
     }
-});
+},
+    {timestamps: true});
 
 export default mongoose.model("User", UserSchema);

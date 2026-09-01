@@ -11,6 +11,7 @@ const Categories = new mongoose.Schema({
         required: true,
         default: 0
     }
-});
+},
+    {timestamps: true});
 
 export default mongoose.model('Category' , Categories);

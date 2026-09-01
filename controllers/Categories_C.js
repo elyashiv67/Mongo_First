@@ -1,4 +1,5 @@
 import Category from "../module/Categories.js";
+import Book from "../module/Books.js";
 
 async function getAllCategories(req, res){
     try{
@@ -81,7 +82,12 @@ async function updateCategory(req, res){
 async function deleteCategory(req, res){
     try{
         const id = req.id;
-        const deletedCategory = await Category.findByIdAndDelete(id, {});
+        const books = await Book.exists({category: id});
+        if(books)
+            return res.status(409).json({message: 'Cant delete category with books assigned to it'});
+
+
+        const deletedCategory = await Category.findByIdAndDelete(id);
         if (!deletedCategory) {
             return res.status(404).json({message: 'Category not found'});
         }
